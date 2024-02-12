@@ -1,0 +1,6 @@
+spacy
+neo4j
+openai
+PyPDF2
+networkx
+time
