@@ -8,16 +8,22 @@ import networkx as nx
 from pyvis.network import Network
 import time
 from concurrent.futures import ThreadPoolExecutor
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Set up OpenAI API key
-openai.api_key = '#'
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Set up Neo4j connection
-uri = "#"
-username = "#"
-password = "#"
+uri = os.getenv("NEO4J_URI")
+username = os.getenv("NEO4J_USERNAME")
+password = os.getenv("NEO4J_PASSWORD")
 
 driver = GraphDatabase.driver(uri, auth=(username, password))
+
 
 nlp = spacy.load("en_core_web_sm")
 
