@@ -190,6 +190,7 @@ def upload_section():
     return uploaded_files
 
 # Streamlit interface for displaying knowledge graph
+# Streamlit interface for displaying knowledge graph
 def display_graph_section(uploaded_files):
     st.title("Knowledge Base Visualiser App")
 
@@ -199,6 +200,11 @@ def display_graph_section(uploaded_files):
         "Keyword": "#ADD8E6",   # Green color for keywords
         "SharesKeyword": "#337AFF"  # Blue color for shares keywords
     }
+
+    # Sidebar widgets for filtering nodes and relationships
+    st.sidebar.title("Filter Nodes and Relationships")
+    node_types = st.sidebar.multiselect("Select Node Types", ["Document", "Keyword", "SharesKeyword"], default=["Document", "Keyword", "SharesKeyword"])
+    relationship_types = st.sidebar.multiselect("Select Relationship Types", ["CONTAINS", "SHARES_KEYWORD"], default=["CONTAINS", "SHARES_KEYWORD"])
 
     # Streamlit button
     if st.sidebar.button("Process"):  # Moved the button to the sidebar
@@ -237,24 +243,27 @@ def display_graph_section(uploaded_files):
                     batch_files = uploaded_files[i:i + batch_size]
                     process_batch_pdf(batch_files, document_ids, knowledge_graphs, extracted_data_list)
 
-        # Visualize all knowledge graphs in a single image using pyvis
+        # Visualize filtered knowledge graphs in a single image using pyvis
         net = Network(notebook=True, width="100%", height="800px")
         for G in knowledge_graphs:
             for node in G.nodes:
                 node_type = G.nodes[node].get("type", None)
-                if node_type:
+                if node_type in node_types:
                     net.add_node(node, label=node, title=node, color=node_colors.get(node_type, "#000000"))  # Default color black if not found
             for edge in G.edges:
                 if "relationship" in G[edge[0]][edge[1]]:
-                    net.add_edge(edge[0], edge[1], title=f"{edge[0]} to {edge[1]}",
-                                 label=G[edge[0]][edge[1]]["relationship"])
+                    if G[edge[0]][edge[1]]["relationship"] in relationship_types:
+                        net.add_edge(edge[0], edge[1], title=f"{edge[0]} to {edge[1]}",
+                                     label=G[edge[0]][edge[1]]["relationship"])
                 else:
-                    net.add_edge(edge[0], edge[1], title=f"{edge[0]} to {edge[1]}", label="CONTAINS")
+                    if "CONTAINS" in relationship_types:
+                        net.add_edge(edge[0], edge[1], title=f"{edge[0]} to {edge[1]}", label="CONTAINS")
 
         net.show("knowledge_graphs.html")
 
         # Display the interactive HTML file
         st.components.v1.html(open("knowledge_graphs.html").read(), height=800)
+
 
 
 # Streamlit interface for chat interface
